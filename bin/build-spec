@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [ "$1" == "" ]; then
+    echo "Please specify the name of a spec package to build."
+    echo "Example: build-spec /path/to/rpmbuild/SPECS/nginx.spec" 
+else
+    for SPEC in "$@"
+    do
+        echo "BUILDING: $SPEC"
+        cd ~/rpmbuild
+
+        sudo yum-builddep -y "$SPEC"
+        rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+
+        rpmbuild --clean -ba "$SPEC"
+        rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+    done
+fi
