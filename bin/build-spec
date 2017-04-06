@@ -2,17 +2,34 @@
 
 if [ "$1" == "" ]; then
     echo "Please specify the name of a spec package to build."
-    echo "Example: build-spec /path/to/rpmbuild/SPECS/nginx.spec" 
+    echo "Example: build-spec /path/to/rpmbuild/SPECS/nginx.spec"
+    echo "Some specs need additional packages installed that were just built,"
+    echo "you can tell this script to go and install all RPMs it can find in the RPMS folder with --install-built-rpms"
 else
     for SPEC in "$@"
     do
-        echo "BUILDING: $SPEC"
-        cd ~/rpmbuild
+        if [[ "$SPEC" == "--install-built-rpms" ]]; then
+            # Go and install rpms..
+            cd ~/rpmbuild
+            echo "Installing built RPMs first ..."
+            yum localinstall -y RPMS/*/*.rpm
+            rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+            echo "Done installing built RPMs"
+            echo ""
+        fi
+    done
 
-        sudo yum-builddep -y "$SPEC"
-        rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+    for SPEC in "$@"
+    do
+        if [ "$SPEC" != "--install-built-rpms" ]; then
+            echo "BUILDING: $SPEC"
+            cd ~/rpmbuild
 
-        rpmbuild --clean -ba "$SPEC"
-        rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+            sudo yum-builddep -y "$SPEC"
+            rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+
+            rpmbuild --clean -ba "$SPEC"
+            rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+        fi
     done
 fi
