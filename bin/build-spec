@@ -1,35 +1,90 @@
 #!/bin/bash
 
-if [ "$1" == "" ]; then
-    echo "Please specify the name of a spec package to build."
-    echo "Example: build-spec /path/to/rpmbuild/SPECS/nginx.spec"
-    echo "Some specs need additional packages installed that were just built,"
-    echo "you can tell this script to go and install all RPMs it can find in the RPMS folder with --install-built-rpms"
-else
-    for SPEC in "$@"
-    do
-        if [[ "$SPEC" == "--install-built-rpms" ]]; then
-            # Go and install rpms..
-            cd ~/rpmbuild
-            echo "Installing built RPMs first ..."
-            sudo yum localinstall -y RPMS/*/*.rpm
-            rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
-            echo "Done installing built RPMs"
-            echo ""
-        fi
-    done
-
-    for SPEC in "$@"
-    do
-        if [ "$SPEC" != "--install-built-rpms" ]; then
-            echo "BUILDING: $SPEC"
-            cd ~/rpmbuild
-
-            sudo yum-builddep -y "$SPEC"
-            rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
-
-            rpmbuild --clean -ba "$SPEC"
-            rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
-        fi
-    done
+getopt --test > /dev/null
+if [[ $? -ne 4 ]]; then
+    echo "I’m sorry, `getopt --test` failed in this environment."
+    exit 1
 fi
+
+##############################################
+# show_help                                  #
+##############################################
+function show_help {
+    echo "Please specify the name of a spec package to build."
+    echo ""
+    echo "Usage: $0 [-r dependancy.rpm] /path/to/specfile [/path/to/specfile] [/path/to/specfile]"
+    echo "  -s    Path to Spec File"
+    echo "  -r    Installs the specified RPM first"
+    echo ""
+    echo "Example: $0 -r RPMS/x86_64/php.rpm -r RPMS/noarch/slack.rpm SPECS/php-memcache.spec"
+    echo ""
+}
+
+SHORT=r:h
+LONG=rpm:help
+
+# -temporarily store output to be able to check for errors
+# -activate advanced mode getopt quoting e.g. via “--options”
+# -pass arguments only via   -- "$@"   to separate them correctly
+PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
+if [[ $? -ne 0 ]]; then
+    # e.g. $? == 1
+    #  then getopt has complained about wrong arguments to stdout
+    exit 2
+fi
+# use eval with "$PARSED" to properly handle the quoting
+eval set -- "$PARSED"
+
+rpmfiles=""
+
+# now enjoy the options in order and nicely split until we see --
+while true; do
+    case "$1" in
+        -r|--rpm)
+            rpmfiles+="$2 "
+            shift 2
+            ;;
+        -h|--help)
+            show_help
+            exit 1
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Programming error"
+            exit 3
+            ;;
+    esac
+done
+
+# handle non-option arguments
+if [[ $# -eq 0 ]]; then
+    show_help
+    exit 1
+fi
+
+cd ~/rpmbuild
+
+## Install RPMS
+if [ -n "$rpmfiles" ]; then
+    echo "Installing RPMs ..."
+    sudo yum -y localinstall $rpmfiles
+    rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+    echo "Done installing built RPMs"
+fi
+
+## Build Specs
+for SPEC in "$@"
+do
+    echo "BUILDING: $SPEC ..."
+    cd ~/rpmbuild
+
+    sudo yum-builddep -y "$SPEC"
+    rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+
+    rpmbuild --clean -ba "$SPEC"
+    rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+done
+
