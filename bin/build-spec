@@ -15,12 +15,13 @@ function show_help {
     echo "Usage: $0 [-r dependancy.rpm] /path/to/specfile [/path/to/specfile] [/path/to/specfile]"
     echo "  -s    Path to Spec File"
     echo "  -r    Installs the specified RPM first"
+    echo "  -b    Skip broken packages in RPM install, only applies with -r"
     echo ""
     echo "Example: $0 -r RPMS/x86_64/php.rpm -r RPMS/noarch/slack.rpm SPECS/php-memcache.spec"
     echo ""
 }
 
-SHORT=r:h
+SHORT=br:h
 LONG=rpm:help
 
 # -temporarily store output to be able to check for errors
@@ -36,6 +37,7 @@ fi
 eval set -- "$PARSED"
 
 rpmfiles=""
+skip_broken=""
 
 # now enjoy the options in order and nicely split until we see --
 while true; do
@@ -47,6 +49,10 @@ while true; do
         -h|--help)
             show_help
             exit 1
+            ;;
+        -b)
+            skip_broken="--skip-broken"
+            shift
             ;;
         --)
             shift
@@ -70,7 +76,7 @@ cd ~/rpmbuild
 ## Install RPMS
 if [ -n "$rpmfiles" ]; then
     echo "Installing RPMs ..."
-    sudo yum -y localinstall $rpmfiles
+    sudo yum -y $skip_broken localinstall $rpmfiles
     rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
     echo "Done installing built RPMs"
 fi
