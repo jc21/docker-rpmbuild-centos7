@@ -4,7 +4,7 @@ MAINTAINER Jamie Curnow <jc@jc21.com>
 
 # Yum
 RUN rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && \
-    yum localinstall -y --nogpgcheck http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.3-1.el7.rf.x86_64.rpm && \
+    yum localinstall -y https://yum.jc21.com/jc21-yum.rpm && \
     yum -y install deltarpm && \
     yum -y update && \
     yum -y install which mock git wget curl kernel-devel rpmdevtools rpmlint rpm-build sudo gcc-c++ make automake autoconf yum-utils scl-utils scl-utils-build cmake libtool
