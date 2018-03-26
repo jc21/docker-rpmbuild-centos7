@@ -13,16 +13,16 @@ function show_help {
     echo "Please specify the name of a spec package to build."
     echo ""
     echo "Usage: $0 [-r dependancy.rpm] /path/to/specfile [/path/to/specfile] [/path/to/specfile]"
-    echo "  -s    Path to Spec File"
-    echo "  -r    Installs the specified RPM first"
-    echo "  -b    Skip broken packages in RPM install, only applies with -r"
+    echo "  -p      Installs specified yum package first"
+    echo "  -r      Installs the specified RPM next"
+    echo "  -b      Skip broken packages in RPM install, only applies with -r and/or -p"
     echo ""
     echo "Example: $0 -r RPMS/x86_64/php.rpm -r RPMS/noarch/slack.rpm SPECS/php-memcache.spec"
     echo ""
 }
 
-SHORT=br:h
-LONG=rpm:help
+SHORT=p:br:h
+LONG=help
 
 # -temporarily store output to be able to check for errors
 # -activate advanced mode getopt quoting e.g. via “--options”
@@ -36,13 +36,18 @@ fi
 # use eval with "$PARSED" to properly handle the quoting
 eval set -- "$PARSED"
 
+packages=""
 rpmfiles=""
 skip_broken=""
 
 # now enjoy the options in order and nicely split until we see --
 while true; do
     case "$1" in
-        -r|--rpm)
+        -p)
+            packages+="$2 "
+            shift 2
+            ;;
+        -r)
             rpmfiles+="$2 "
             shift 2
             ;;
@@ -73,6 +78,14 @@ fi
 
 cd ~/rpmbuild
 
+## Install PACKAGES
+if [ -n "$packages" ]; then
+    echo "Installing Yum Packages ..."
+    sudo yum -y $skip_broken install $packages
+    rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+    echo "Done installing Yum Packages"
+fi
+
 ## Install RPMS
 if [ -n "$rpmfiles" ]; then
     echo "Installing RPMs ..."
@@ -81,16 +94,15 @@ if [ -n "$rpmfiles" ]; then
     echo "Done installing built RPMs"
 fi
 
-## Build Specs
-for SPEC in "$@"
-do
-    echo "BUILDING: $SPEC ..."
-    cd ~/rpmbuild
+## Build Spec
+echo "BUILDING: $@ ..."
+cd ~/rpmbuild
 
-    sudo yum-builddep -y "$SPEC"
-    rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+sudo yum-builddep -y $1
+rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
 
-    rpmbuild --clean -ba "$SPEC"
-    rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
-done
+rpmbuild --clean -ba $@
+rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+
+
 
