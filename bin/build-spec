@@ -76,6 +76,10 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
+# Yum cleaning
+sudo yum clean all
+sudo rm -rf rm -rf /var/cache/yum
+
 cd ~/rpmbuild
 
 ## Install PACKAGES
