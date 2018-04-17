@@ -32,7 +32,10 @@ RUN chown root:root /etc/sudoers.d/*
 RUN sed -i '/Defaults    requiretty/c\#Defaults    requiretty' /etc/sudoers
 
 # Rpm User
-RUN adduser -G wheel rpmbuilder
+RUN adduser -G wheel rpmbuilder \
+    && mkdir -p /home/rpmbuilder/rpmbuild/{BUILD,SPECS,SOURCES,BUILDROOT,RPMS,SRPMS,tmp} \
+    && chmod -R 777 /home/rpmbuilder/rpmbuild
+
 ADD .rpmmacros /home/rpmbuilder/
 USER rpmbuilder
 
