@@ -48,4 +48,15 @@ rc=$?; if [ $rc != 0 ]; then exit $rc; fi'''
       }
     }
   }
+  triggers {
+    bitbucketPush()
+  }
+  post {
+    success {
+      slackSend color: "good", message: "<${BUILD_URL}|${JOB_NAME}> build #${BUILD_NUMBER} completed"
+    }
+    failure {
+      slackSend color: "#d61111", message: "<${BUILD_URL}|${JOB_NAME}> build #${BUILD_NUMBER} failed"
+    }
+  }
 }
