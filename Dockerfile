@@ -17,9 +17,6 @@ RUN rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.
     && yum clean all \
     && rm -rf /var/cache/yum
 
-# Rust
-RUN curl -sSf https://static.rust-lang.org/rustup.sh | sh -s -- --channel=nightly --disable-sudo -y
-
 # build files
 ADD bin/build-spec /bin/
 ADD bin/build-all /bin/

@@ -9,12 +9,11 @@ exit 0'''
     }
     stage('Build') {
       steps {
-        sh '''DOCKER_REGISTRY=docker-registry.jc21.net.au
-IMAGE_NAME="rpmbuild"
+        sh '''IMAGE_NAME="rpmbuild"
 TAG_NAME="el7"
 
 TEMP_IMAGE_NAME="${IMAGE_NAME}-${TAG_NAME}_${BUILD_NUMBER}"
-FINAL_IMAGE_NAME="${DOCKER_REGISTRY}/${IMAGE_NAME}:${TAG_NAME}"
+FINAL_IMAGE_NAME="${DOCKER_PRIVATE_REGISTRY}/${IMAGE_NAME}:${TAG_NAME}"
 
 # Build
 echo "Building temp image..."
@@ -25,12 +24,11 @@ rc=$?; if [ $rc != 0 ]; then exit $rc; fi
     }
     stage('Publish') {
       steps {
-        sh '''DOCKER_REGISTRY=docker-registry.jc21.net.au
-IMAGE_NAME="rpmbuild"
+        sh '''IMAGE_NAME="rpmbuild"
 TAG_NAME="el7"
 
 TEMP_IMAGE_NAME="${IMAGE_NAME}-${TAG_NAME}_${BUILD_NUMBER}"
-FINAL_IMAGE_NAME="${DOCKER_REGISTRY}/${IMAGE_NAME}:${TAG_NAME}"
+FINAL_IMAGE_NAME="${DOCKER_PRIVATE_REGISTRY}/${IMAGE_NAME}:${TAG_NAME}"
 
 # Tag
 echo "Tagging new image..."
