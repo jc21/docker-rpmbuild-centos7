@@ -17,7 +17,7 @@ FINAL_IMAGE_NAME="${DOCKER_PRIVATE_REGISTRY}/${IMAGE_NAME}:${TAG_NAME}"
 
 # Build
 echo "Building temp image..."
-docker build -t ${TEMP_IMAGE_NAME} .
+docker build --squash --compress -t ${TEMP_IMAGE_NAME} .
 rc=$?; if [ $rc != 0 ]; then exit $rc; fi
 '''
       }
