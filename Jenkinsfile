@@ -18,7 +18,7 @@ pipeline {
     stage('Build') {
       steps {
         sh 'FINAL_IMAGE_NAME="${DOCKER_PRIVATE_REGISTRY}/${IMAGE_NAME}:${TAG_NAME}"'
-        sh 'docker build --squash --compress -t ${TEMP_IMAGE_NAME} .'
+        sh 'docker build --no-cache --squash --compress -t ${TEMP_IMAGE_NAME} .'
       }
     }
     stage('Publish') {
