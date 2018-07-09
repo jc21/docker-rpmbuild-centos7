@@ -17,14 +17,18 @@ pipeline {
     }
     stage('Build') {
       steps {
-        sh 'FINAL_IMAGE_NAME="${DOCKER_PRIVATE_REGISTRY}/${IMAGE_NAME}:${TAG_NAME}"'
-        sh 'docker build --no-cache --squash --compress -t ${TEMP_IMAGE_NAME} .'
+        ansiColor('xterm') {
+          sh 'FINAL_IMAGE_NAME="${DOCKER_PRIVATE_REGISTRY}/${IMAGE_NAME}:${TAG_NAME}"'
+          sh 'docker build --no-cache --squash --compress -t ${TEMP_IMAGE_NAME} .'
+        }
       }
     }
     stage('Publish') {
       steps {
-        sh 'docker tag ${TEMP_IMAGE_NAME} ${DOCKER_PRIVATE_REGISTRY}/${IMAGE_NAME}:${TAG_NAME}'
-        sh 'docker push ${DOCKER_PRIVATE_REGISTRY}/${IMAGE_NAME}:${TAG_NAME}'
+        ansiColor('xterm') {
+          sh 'docker tag ${TEMP_IMAGE_NAME} ${DOCKER_PRIVATE_REGISTRY}/${IMAGE_NAME}:${TAG_NAME}'
+          sh 'docker push ${DOCKER_PRIVATE_REGISTRY}/${IMAGE_NAME}:${TAG_NAME}'
+        }
       }
     }
   }
