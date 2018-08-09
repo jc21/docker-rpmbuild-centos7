@@ -4,8 +4,8 @@ This container allows you to use your existing RPM build folders but build withi
 
 The container has:
 
-* EPEL and RPM Forge repositories
-* Rust cargo build support (nightly)
+* EPEL
+* Common build packages
 
 ## Setup
 
