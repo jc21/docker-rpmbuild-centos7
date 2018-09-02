@@ -6,6 +6,13 @@ if [[ $? -ne 4 ]]; then
     exit 1
 fi
 
+
+# Enable devtools if variable is set and not empty
+if [ -n "$DEVTOOLS" ]; then
+    source /opt/rh/devtoolset-7/enable
+fi
+
+
 ##############################################
 # show_help                                  #
 ##############################################

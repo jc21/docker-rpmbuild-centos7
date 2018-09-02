@@ -82,3 +82,12 @@ Then to run it:
 ```bash
 ./build.sh something.spec
 ```
+
+## Building with the latest C++ compiler
+
+Devtools-7 is part of this image. To enable it as part of the building process just add the following environment variable to the docker command:
+
+```bash
+-e DEVTOOLS=1
+```
+
