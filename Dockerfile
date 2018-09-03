@@ -3,6 +3,10 @@ FROM centos:7
 MAINTAINER Jamie Curnow <jc@jc21.com>
 LABEL maintainer="Jamie Curnow <jc@jc21.com>"
 
+# Disable the mirrorlist because god damn are they useless.
+RUN sed -i 's/^mirrorlist=/#mirrorlist=/' /etc/yum.repos.d/CentOS-Base.repo \
+    && sed -i 's/^#baseurl=/baseurl=/' /etc/yum.repos.d/CentOS-Base.repo
+
 # Yum
 RUN rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     && yum localinstall -y https://yum.jc21.com/jc21-yum.rpm \
