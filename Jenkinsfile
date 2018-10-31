@@ -10,16 +10,11 @@ pipeline {
     TAG_NAME        = "el7"
   }
   stages {
-    stage('Prepare') {
-      steps {
-        sh 'docker pull centos:7'
-      }
-    }
     stage('Build') {
       steps {
         ansiColor('xterm') {
           sh 'FINAL_IMAGE_NAME="${DOCKER_PRIVATE_REGISTRY}/${IMAGE_NAME}:${TAG_NAME}"'
-          sh 'docker build --no-cache --squash --compress -t ${TEMP_IMAGE_NAME} .'
+          sh 'docker build --pull --no-cache --squash --compress -t ${TEMP_IMAGE_NAME} .'
         }
       }
     }
