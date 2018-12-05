@@ -3,7 +3,9 @@ pipeline {
     buildDiscarder(logRotator(numToKeepStr: '10'))
     disableConcurrentBuilds()
   }
-  agent any
+  agent {
+    label 'rpm'
+  }
   environment {
     IMAGE_NAME      = "rpmbuild"
     TEMP_IMAGE_NAME = "rpmbuild7_${BUILD_NUMBER}"
