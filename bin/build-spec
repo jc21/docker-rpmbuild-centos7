@@ -24,12 +24,13 @@ function show_help {
     echo "  -p      Installs specified yum package next"
     echo "  -r      Installs the specified RPM next"
     echo "  -b      Skip broken packages in RPM install, only applies with -r and/or -p"
+    echo "  -o      Set yum to ignore obsoletes"
     echo ""
     echo "Example: $0 -r RPMS/x86_64/php.rpm -r RPMS/noarch/slack.rpm SPECS/php-memcache.spec"
     echo ""
 }
 
-SHORT=p:u:br:h
+SHORT=p:u:br:ho
 LONG=help
 
 # -temporarily store output to be able to check for errors
@@ -48,6 +49,7 @@ upackages=""
 packages=""
 rpmfiles=""
 skip_broken=""
+obsoletes=""
 
 # now enjoy the options in order and nicely split until we see --
 while true; do
@@ -59,6 +61,10 @@ while true; do
         -p)
             packages+="$2 "
             shift 2
+            ;;
+        -o)
+            obsoletes="--setopt=obsoletes=0"
+            shift 1
             ;;
         -r)
             rpmfiles+="$2 "
@@ -106,7 +112,7 @@ fi
 ## Install PACKAGES
 if [ -n "$packages" ]; then
     echo "Installing Yum Packages ..."
-    sudo yum -y $skip_broken install $packages
+    sudo yum -y $skip_broken $obsoletes install $packages
     rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
     echo "Done installing Yum Packages"
 fi
@@ -114,7 +120,7 @@ fi
 ## Install RPMS
 if [ -n "$rpmfiles" ]; then
     echo "Installing RPMs ..."
-    sudo yum -y $skip_broken localinstall $rpmfiles
+    sudo yum -y $skip_broken $obsoletes localinstall $rpmfiles
     rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
     echo "Done installing built RPMs"
 fi
