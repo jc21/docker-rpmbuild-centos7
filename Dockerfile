@@ -22,6 +22,9 @@ RUN rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.
     && yum clean all \
     && rm -rf /var/cache/yum
 
+# Fix scl problem: https://bugs.centos.org/view.php?id=14773
+RUN rm -rf /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo
+
 # build files
 ADD bin/build-spec /bin/
 ADD bin/build-all /bin/
