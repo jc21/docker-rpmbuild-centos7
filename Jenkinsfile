@@ -4,7 +4,7 @@ pipeline {
     disableConcurrentBuilds()
   }
   agent {
-    label 'rpm'
+    label 'docker-amd64'
   }
   environment {
     IMAGE      = "rpmbuild-centos7"
