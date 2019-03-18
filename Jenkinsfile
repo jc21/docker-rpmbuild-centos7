@@ -8,8 +8,8 @@ pipeline {
   }
   environment {
     IMAGE      = "rpmbuild-centos7"
-    TEMP_IMAGE = "rpmbuild7_${BUILD_NUMBER}"
     TAG        = "latest"
+    TEMP_IMAGE = "rpmbuild7_${TAG}_${BUILD_NUMBER}"
   }
   stages {
     stage('Build') {
