@@ -34,6 +34,9 @@ pipeline {
       }
     }
   }
+  triggers {
+    githubPush()
+  }
   post {
     success {
       build job: 'Docker/docker-rpmbuild-centos7/golang', wait: false
