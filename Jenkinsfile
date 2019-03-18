@@ -7,9 +7,9 @@ pipeline {
     label 'rpm'
   }
   environment {
-    IMAGE = "rpmbuild-centos7"
-    TEMP  = "rpmbuild7_${BUILD_NUMBER}"
-    TAG   = "latest"
+    IMAGE      = "rpmbuild-centos7"
+    TEMP_IMAGE = "rpmbuild7_${BUILD_NUMBER}"
+    TAG        = "latest"
   }
   stages {
     stage('Build') {
@@ -33,9 +33,6 @@ pipeline {
         }
       }
     }
-  }
-  triggers {
-    bitbucketPush()
   }
   post {
     success {
