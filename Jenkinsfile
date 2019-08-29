@@ -43,6 +43,7 @@ pipeline {
       build job: 'Docker/docker-rpmbuild-centos7/devtools7', wait: false
       build job: 'Docker/docker-rpmbuild-centos7/rust', wait: false
       build job: 'Docker/docker-rpmbuild-centos7/fpm', wait: false
+      build job: 'Docker/docker-rpmbuild-centos7/haskell', wait: false
 
       juxtapose event: 'success'
       sh 'figlet "SUCCESS"'
