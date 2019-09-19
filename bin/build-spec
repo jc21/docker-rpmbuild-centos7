@@ -1,8 +1,15 @@
 #!/bin/bash
 
+CYAN='\E[1;36m'
+RED='\E[1;31m'
+YELLOW='\E[1;33m'
+GREEN='\E[1;32m'
+BLUE='\E[1;34m'
+RESET='\E[0m'
+
 getopt --test > /dev/null
 if [[ $? -ne 4 ]]; then
-    echo "I’m sorry, `getopt --test` failed in this environment."
+    echo -e "${BLUE}I’m sorry, `getopt --test` failed in this environment.${RESET}"
     exit 1
 fi
 
@@ -20,6 +27,7 @@ function show_help {
     echo "Please specify the name of a spec package to build."
     echo ""
     echo "Usage: $0 [-r dependancy.rpm] /path/to/specfile [/path/to/specfile] [/path/to/specfile]"
+    echo "  -m      Disable yum fastest mirror plugin"
     echo "  -u      Uninstalls specified yum package first"
     echo "  -p      Installs specified yum package next"
     echo "  -r      Installs the specified RPM next"
@@ -30,7 +38,7 @@ function show_help {
     echo ""
 }
 
-SHORT=p:u:br:ho
+SHORT=p:u:br:hom
 LONG=help
 
 # -temporarily store output to be able to check for errors
@@ -45,11 +53,12 @@ fi
 # use eval with "$PARSED" to properly handle the quoting
 eval set -- "$PARSED"
 
-upackages=""
-packages=""
-rpmfiles=""
-skip_broken=""
-obsoletes=""
+upackages=
+packages=
+rpmfiles=
+skip_broken=
+obsoletes=
+nomirror=
 
 # now enjoy the options in order and nicely split until we see --
 while true; do
@@ -61,6 +70,10 @@ while true; do
         -p)
             packages+="$2 "
             shift 2
+            ;;
+        -m)
+            nomirror="1"
+            shift 1
             ;;
         -o)
             obsoletes="--setopt=obsoletes=0"
@@ -83,7 +96,7 @@ while true; do
             break
             ;;
         *)
-            echo "Programming error"
+            echo -e "${RED}Programming error${RESET}"
             exit 3
             ;;
     esac
@@ -101,32 +114,36 @@ sudo rm -rf rm -rf /var/cache/yum
 
 cd ~/rpmbuild
 
+## Disable yum mirror if specified
+if [ -n "$nomirror" ]; then
+    echo -e "${YELLOW}❯ ${GREEN}Disabling Yum Fastest Mirror Plugin ...${RESET}"
+    sudo sed -i '/enabled=1/c\enabled=0' /etc/yum/pluginconf.d/fastestmirror.conf
+    rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+fi
+
 ## Uninstall PACKAGES
 if [ -n "$upackages" ]; then
-    echo "Uninstalling Yum Packages ..."
+    echo -e "${YELLOW}❯ ${GREEN}Uninstalling Yum Packages ...${RESET}"
     sudo yum -y erase $upackages
     rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
-    echo "Done uninstalling Yum Packages"
 fi
 
 ## Install PACKAGES
 if [ -n "$packages" ]; then
-    echo "Installing Yum Packages ..."
+    echo -e "${YELLOW}❯ ${GREEN}Installing Yum Packages ...${RESET}"
     sudo yum -y $skip_broken $obsoletes install $packages
     rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
-    echo "Done installing Yum Packages"
 fi
 
 ## Install RPMS
 if [ -n "$rpmfiles" ]; then
-    echo "Installing RPMs ..."
+    echo -e "${YELLOW}❯ ${GREEN}Installing RPMs ...${RESET}"
     sudo yum -y $skip_broken $obsoletes localinstall $rpmfiles
     rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
-    echo "Done installing built RPMs"
 fi
 
 ## Build Spec
-echo "BUILDING: $@ ..."
+echo -e "${YELLOW}❯ ${GREEN}Building ${WHITE}$@ ${GREEN}...${RESET}"
 cd ~/rpmbuild
 
 sudo yum-builddep -y $1
@@ -134,6 +151,3 @@ rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
 
 rpmbuild --clean -ba $@
 rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
-
-
-
