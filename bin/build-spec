@@ -110,7 +110,7 @@ fi
 
 # Yum cleaning
 sudo yum clean all
-sudo rm -rf rm -rf /var/cache/yum
+sudo rm -rf /var/cache/yum
 
 cd ~/rpmbuild
 
