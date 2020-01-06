@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 RED='\E[1;31m'
 YELLOW='\E[1;33m'
@@ -117,24 +117,28 @@ cd ~/rpmbuild
 if [ -n "$nomirror" ]; then
     echo -e "${YELLOW}❯ ${GREEN}Disabling Yum Fastest Mirror Plugin ...${RESET}"
     sudo sed -i '/enabled=1/c\enabled=0' /etc/yum/pluginconf.d/fastestmirror.conf
+    rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
 fi
 
 ## Uninstall PACKAGES
 if [ -n "$upackages" ]; then
     echo -e "${YELLOW}❯ ${GREEN}Uninstalling Yum Packages ...${RESET}"
     sudo yum -y erase $upackages
+    rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
 fi
 
 ## Install PACKAGES
 if [ -n "$packages" ]; then
     echo -e "${YELLOW}❯ ${GREEN}Installing Yum Packages ...${RESET}"
     sudo yum -y $skip_broken $obsoletes install $packages
+    rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
 fi
 
 ## Install RPMS
 if [ -n "$rpmfiles" ]; then
     echo -e "${YELLOW}❯ ${GREEN}Installing RPMs ...${RESET}"
     sudo yum -y $skip_broken $obsoletes localinstall $rpmfiles
+    rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
 fi
 
 ## Build Spec
@@ -144,6 +148,11 @@ cd ~/rpmbuild
 for spec in "$@"
 do
     sudo yum-builddep -y $skip_broken "${spec}"
+    rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+
     spectool -g -R "${spec}"
+    rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+
     rpmbuild --clean -ba "${spec}"
+    rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
 done
