@@ -11,5 +11,16 @@ RUN yum -y update \
   && yum clean all \
   && rm -rf /var/cache/yum
 
+# Update golang
+RUN yum localinstall -y \
+  https://yum.jc21.com/centos/base/el/7/noarch/golang-docs-1.16-1.el7.noarch.rpm \
+  https://yum.jc21.com/centos/base/el/7/noarch/golang-misc-1.16-1.el7.noarch.rpm \
+  https://yum.jc21.com/centos/base/el/7/noarch/golang-src-1.16-1.el7.noarch.rpm \
+  https://yum.jc21.com/centos/base/el/7/noarch/golang-tests-1.16-1.el7.noarch.rpm \
+  https://yum.jc21.com/centos/base/el/7/x86_64/golang-1.16-1.el7.x86_64.rpm \
+  https://yum.jc21.com/centos/base/el/7/x86_64/golang-bin-1.16-1.el7.x86_64.rpm \
+  https://yum.jc21.com/centos/base/el/7/x86_64/golang-race-1.16-1.el7.x86_64.rpm \
+  https://yum.jc21.com/centos/base/el/7/x86_64/golang-shared-1.16-1.el7.x86_64.rpm
+
 USER rpmbuilder
 
