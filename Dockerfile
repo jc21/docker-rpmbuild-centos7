@@ -3,6 +3,8 @@ FROM centos:7
 MAINTAINER Jamie Curnow <jc@jc21.com>
 LABEL maintainer="Jamie Curnow <jc@jc21.com>"
 
+ENV LANG=en_AU.UTF-8
+
 # Disable the mirrorlist because god damn are they useless.
 RUN sed -i 's/^mirrorlist=/#mirrorlist=/' /etc/yum.repos.d/CentOS-Base.repo \
     && sed -i 's/^#baseurl=/baseurl=/' /etc/yum.repos.d/CentOS-Base.repo
