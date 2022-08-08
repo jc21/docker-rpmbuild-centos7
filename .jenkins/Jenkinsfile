@@ -55,19 +55,12 @@ pipeline {
 						sh 'docker tag "${TEMP_IMAGE}_haskell" jc21/${IMAGE}:haskell'
 					}
 				}
-				stage('Devtools7') {
-					steps {
-						sh 'docker build --no-cache --squash --compress -t "${TEMP_IMAGE}_devtools7" -f docker/Dockerfile.devtools7 .'
-						sh 'docker tag "${TEMP_IMAGE}_devtools7" jc21/${IMAGE}:devtools7'
-					}
-				}
 			}
 			post {
 				always {
 					sh 'docker rmi "${TEMP_IMAGE}_golang" || true'
 					sh 'docker rmi "${TEMP_IMAGE}_rust" || true'
 					sh 'docker rmi "${TEMP_IMAGE}_haskell" || true'
-					sh 'docker rmi "${TEMP_IMAGE}_devtools7" || true'
 				}
 			}
 		}
@@ -81,7 +74,6 @@ pipeline {
 					sh 'docker push "jc21/${IMAGE}:golang"'
 					sh 'docker push "jc21/${IMAGE}:rust"'
 					sh 'docker push "jc21/${IMAGE}:haskell"'
-					sh 'docker push "jc21/${IMAGE}:devtools7"'
 				}
 			}
 			post {
@@ -89,7 +81,6 @@ pipeline {
 					sh 'docker rmi "jc21/${IMAGE}:golang" || true'
 					sh 'docker rmi "jc21/${IMAGE}:rust" || true'
 					sh 'docker rmi "jc21/${IMAGE}:haskell" || true'
-					sh 'docker rmi "jc21/${IMAGE}:devtools7" || true'
 				}
 			}
 		}
