@@ -1,0 +1,113 @@
+pipeline {
+	options {
+		buildDiscarder(logRotator(numToKeepStr: '10'))
+		disableConcurrentBuilds()
+		ansiColor('xterm')
+	}
+	agent {
+		label 'docker'
+	}
+	environment {
+		IMAGE      = 'rpmbuild-centos7'
+		TEMP_IMAGE = "rpmbuild7_${BUILD_NUMBER}"
+	}
+	stages {
+		stage('Base') {
+			steps {
+				sh 'docker build --pull --no-cache --squash --compress -t "${TEMP_IMAGE}_latest" -f docker/Dockerfile .'
+				sh 'docker tag "${TEMP_IMAGE}_latest" jc21/${IMAGE}:latest'
+			}
+			post {
+				always {
+					sh 'docker rmi "${TEMP_IMAGE}_latest" || true'
+				}
+			}
+		}
+		stage('Base Publish') {
+			when {
+				branch 'master'
+			}
+			steps {
+				withCredentials([usernamePassword(credentialsId: 'jc21-dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+					sh 'docker login -u "${DOCKER_USER}" -p "${DOCKER_PASS}"'
+					sh 'docker push jc21/${IMAGE}:latest'
+				}
+			}
+		}
+		// Other images that depend on the base
+		stage('Others') {
+			parallel {
+				stage('Golang') {
+					steps {
+						sh 'docker build --no-cache --squash --compress -t "${TEMP_IMAGE}_golang" -f docker/Dockerfile.golang .'
+						sh 'docker tag "${TEMP_IMAGE}_golang" jc21/${IMAGE}:golang'
+					}
+				}
+				stage('Rust') {
+					steps {
+						sh 'docker build --no-cache --squash --compress -t "${TEMP_IMAGE}_rust" -f docker/Dockerfile.rust .'
+						sh 'docker tag "${TEMP_IMAGE}_rust" jc21/${IMAGE}:rust'
+					}
+				}
+				stage('Haskell') {
+					steps {
+						sh 'docker build --no-cache --squash --compress -t "${TEMP_IMAGE}_haskell" -f docker/Dockerfile.haskell .'
+						sh 'docker tag "${TEMP_IMAGE}_haskell" jc21/${IMAGE}:haskell'
+					}
+				}
+				stage('Devtools7') {
+					steps {
+						sh 'docker build --no-cache --squash --compress -t "${TEMP_IMAGE}_devtools7" -f docker/Dockerfile.devtools7 .'
+						sh 'docker tag "${TEMP_IMAGE}_devtools7" jc21/${IMAGE}:devtools7'
+					}
+				}
+			}
+			post {
+				always {
+					sh 'docker rmi "${TEMP_IMAGE}_golang" || true'
+					sh 'docker rmi "${TEMP_IMAGE}_rust" || true'
+					sh 'docker rmi "${TEMP_IMAGE}_haskell" || true'
+					sh 'docker rmi "${TEMP_IMAGE}_devtools7" || true'
+				}
+			}
+		}
+		stage('Publish Others') {
+			when {
+				branch 'master'
+			}
+			steps {
+				withCredentials([usernamePassword(credentialsId: 'jc21-dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+					sh 'docker login -u "${DOCKER_USER}" -p "${DOCKER_PASS}"'
+					sh 'docker push "jc21/${IMAGE}:golang"'
+					sh 'docker push "jc21/${IMAGE}:rust"'
+					sh 'docker push "jc21/${IMAGE}:haskell"'
+					sh 'docker push "jc21/${IMAGE}:devtools7"'
+				}
+			}
+			post {
+				always {
+					sh 'docker rmi "jc21/${IMAGE}:golang" || true'
+					sh 'docker rmi "jc21/${IMAGE}:rust" || true'
+					sh 'docker rmi "jc21/${IMAGE}:haskell" || true'
+					sh 'docker rmi "jc21/${IMAGE}:devtools7" || true'
+				}
+			}
+		}
+	}
+	triggers {
+		githubPush()
+	}
+	post {
+		success {
+			juxtapose event: 'success'
+			sh 'figlet "SUCCESS"'
+		}
+		failure {
+			juxtapose event: 'failure'
+			sh 'figlet "FAILURE"'
+		}
+		always {
+			sh 'docker rmi "jc21/${IMAGE}:latest" || true'
+		}
+	}
+}
