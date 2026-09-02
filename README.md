@@ -1,3 +1,5 @@
+> **⚠️ DEPRECATED:** This repository is superseded with https://github.com/jc21-rpm/docker-rpmbuild
+
 # Centos 7 RPM Build Environment
 
 This container allows you to use your existing RPM build folders but build within the Centos 7 environment.
